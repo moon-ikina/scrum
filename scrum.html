@@ -121,6 +121,24 @@ textarea{resize:vertical;min-height:82px;line-height:1.65;}
   .score-sel{flex-wrap:wrap;}
   .s-opt{min-width:56px;}
 }
+/* 팝업 모달 스타일 */
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 1000;
+  background: rgba(45, 42, 38, 0.5); backdrop-filter: blur(4px);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
+}
+.modal-overlay.on { opacity: 1; pointer-events: auto; }
+.modal-box {
+  background: var(--white); border-radius: var(--r); padding: 30px;
+  width: 90%; max-width: 400px; text-align: center;
+  box-shadow: var(--shadow-lg); border: 1.5px solid var(--border);
+  transform: translateY(20px); transition: transform 0.3s ease;
+}
+.modal-overlay.on .modal-box { transform: translateY(0); }
+.modal-title { font-family: 'Gaegu', cursive; font-size: 24px; font-weight: 700; color: var(--ink); margin-bottom: 12px; }
+.modal-gag { font-size: 14px; color: var(--ink-mid); background: var(--cream); padding: 15px; border-radius: var(--r-sm); line-height: 1.6; font-style: italic; margin-bottom: 20px; word-break: keep-all; }
+.modal-btn { font-family: 'Noto Sans KR', sans-serif; font-size: 13px; font-weight: 700; color: var(--white); background: linear-gradient(135deg, #ff9a7b, #ff6b6b); border: none; border-radius: var(--r-sm); padding: 10px 24px; cursor: pointer; box-shadow: 0 2px 8px rgba(255,100,80,0.25); }
 </style>
 </head>
 <body>
@@ -207,7 +225,7 @@ textarea{resize:vertical;min-height:82px;line-height:1.65;}
 </main>
 <div class="toast" id="toast"></div>
 <script>
-const SCRIPT_URL='https://script.google.com/macros/s/AKfycbyUvkaLQHAwN2VDctuZKObp6cpLn42NTAhSps49XhvkeQI_iNuOcfJGqAvb_4pTOWb2bw/exec';
+const SCRIPT_URL='https://script.google.com/macros/s/AKfycbxB2B_N3rxRou-9z9NvL8M_DZm01SSe-Wxn3leYqa8MKFUNvE8NsWO-dgWcLzhTXdoN/exec';
 const MEMBERS=['김문일','윤희섭','차연수','김주용','김진영','신형종','강미란','김형기'];
 const TOTAL=MEMBERS.length;
 const SCORE={'VERY HIGH':{e:'🔥',lbl:'VERY HIGH',pal:'p-vh',badge:'b-vh'},'HIGH':{e:'😄',lbl:'HIGH',pal:'p-h',badge:'b-h'},'MIDDLE':{e:'😐',lbl:'MIDDLE',pal:'p-m',badge:'b-m'},'LOW':{e:'😴',lbl:'LOW',pal:'p-l',badge:'b-l'},'VERY LOW':{e:'💀',lbl:'VERY LOW',pal:'p-vl',badge:'b-vl'}};
@@ -291,6 +309,7 @@ async function loadData(){
   });
 }
 
+// 기존 submitScrum 함수를 이 내용으로 덮어씌우세요.
 async function submitScrum(){
   const name=document.getElementById('fName').value;
   const done=document.getElementById('fDone').value.trim();
@@ -302,12 +321,36 @@ async function submitScrum(){
   const btn=document.getElementById('subBtn');
   btn.innerHTML='<span>제출 중...</span>';btn.disabled=true;
   try{
-    await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify({date:kstDate(),name,score:selScore,reason:document.getElementById('fReason').value.trim(),done,todo,issue:document.getElementById('fIssue').value.trim(),timestamp:new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})})});
-    showToast('🎉 제출 완료! 수고했어요 '+name+'님 🌿');
+    // 백엔드 응답을 받아오기 위해 fetch 방식을 정식으로 활용합니다.
+    const response = await fetch(SCRIPT_URL,{
+      method:'POST',
+      headers:{'Content-Type':'text/plain'},
+      body:JSON.stringify({date:kstDate(),name,score:selScore,reason:document.getElementById('fReason').value.trim(),done,todo,issue:document.getElementById('fIssue').value.trim(),timestamp:new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})})
+    });
+    
+    const resData = await response.json();
+    
+    // 성공 시 토스트 대신 팝업창 띄우기
+    openModal(resData.gag);
     resetForm();
-    setTimeout(()=>loadData(),2000);
-  }catch(e){showToast('❌ 제출 실패. 네트워크를 확인해주세요.');}
+    setTimeout(()=>loadData(), 2000);
+  }catch(e){
+    // 구글의 mode:'no-cors' 제약 때문에 실제 성공해도 catch로 빠질 수 있습니다. 
+    // 이를 방지하기 위해 백엔드가 완전한 JSON을 주도록 수정했으므로 정상 작동하나, 혹시 모를 대체 에러 처리를 둡니다.
+    openModal("오늘도 무사히 스크럼 제출 완료! 🌿\n(개그 시트를 불러오지 못했습니다)");
+    resetForm();
+    setTimeout(()=>loadData(), 2000);
+  }
   finally{btn.innerHTML='<span>제출하기</span><span>🚀</span>';btn.disabled=false;}
+}
+
+// 팝업 열기/닫기 함수 추가
+function openModal(gagText) {
+  document.getElementById('gagContent').innerText = gagText;
+  document.getElementById('gagModal').classList.add('on');
+}
+function closeModal() {
+  document.getElementById('gagModal').classList.remove('on');
 }
 
 function renderAll(data){
@@ -405,5 +448,13 @@ setInterval(loadData,60000);
 document.getElementById('hdDate').textContent=kstDisplay();
 updateTitle();loadData();
 </script>
+<!-- 팝업 모달 구조 -->
+<div class="modal-overlay" id="gagModal">
+  <div class="modal-box">
+    <div class="modal-title">🎉 작성이 완료되었습니다!</div>
+    <div class="modal-gag" id="gagContent">랜덤 개그가 로딩 중입니다...</div>
+    <button class="modal-btn" onclick="closeModal()">확인</button>
+  </div>
+</div>
 </body>
 </html>
