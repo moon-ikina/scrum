@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🌱 Daily Scrum</title>
+<link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@300;400;700&family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--cream:#faf8f3;--paper:#fff9ef;--white:#ffffff;--peach:#ffebe0;--peach-border:#ffd4bb;--mint:#e3f5f0;--mint-border:#b8e8de;--mint-dark:#2aab8c;--lavender:#ede8f8;--lavender-border:#d4c8f0;--yellow:#fff9d6;--yellow-border:#ffe896;--rose:#fde8e8;--rose-border:#f9c2c2;--rose-dark:#e05555;--ink:#2d2a26;--ink-mid:#6b6560;--ink-soft:#a09890;--ink-faint:#cdc7be;--border:#ede8e0;--shadow-xs:0 1px 4px rgba(60,40,20,0.06);--shadow-sm:0 2px 8px rgba(60,40,20,0.08),0 1px 3px rgba(60,40,20,0.05);--shadow-md:0 6px 20px rgba(60,40,20,0.10),0 2px 6px rgba(60,40,20,0.06);--shadow-lg:0 16px 40px rgba(60,40,20,0.12),0 4px 12px rgba(60,40,20,0.07);--r:16px;--r-sm:10px;--r-xs:6px;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--cream);color:var(--ink);min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;z-index:0;background:radial-gradient(ellipse 80% 60% at 10% 20%,rgba(255,220,195,0.35) 0%,transparent 60%),radial-gradient(ellipse 60% 50% at 90% 80%,rgba(200,240,228,0.35) 0%,transparent 60%),radial-gradient(ellipse 50% 40% at 50% 50%,rgba(237,232,248,0.25) 0%,transparent 70%);pointer-events:none;}
+body::after{content:'✦ ✧ ✦ ✧ ✦';position:fixed;top:24px;right:32px;font-size:11px;letter-spacing:6px;color:var(--ink-faint);z-index:0;pointer-events:none;}
+.hd{position:sticky;top:0;z-index:100;background:rgba(250,248,243,0.88);backdrop-filter:blur(16px);border-bottom:1.5px solid var(--border);padding:0 28px;height:60px;display:flex;align-items:center;justify-content:space-between;}
+.hd-logo{display:flex;align-items:center;gap:10px;}
+.hd-logo-mark{width:34px;height:34px;background:linear-gradient(135deg,#ffb899,#ff8a65);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:17px;box-shadow:0 2px 8px rgba(255,120,80,0.3);}
+.hd-title{font-family:'Gaegu',cursive;font-size:22px;font-weight:700;color:var(--ink);}
+.hd-right{display:flex;align-items:center;gap:10px;}
+.hd-date{font-size:12px;color:var(--ink-mid);background:var(--white);border:1.5px solid var(--border);padding:4px 14px;border-radius:20px;font-weight:500;}
+.hd-write-btn{font-family:'Noto Sans KR',sans-serif;font-size:12px;font-weight:700;color:var(--white);background:linear-gradient(135deg,#ff9a7b,#ff6b6b);border:none;border-radius:20px;padding:5px 16px;cursor:pointer;box-shadow:0 2px 8px rgba(255,100,80,0.25);transition:all 0.2s;}
+.hd-write-btn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(255,100,80,0.35);}
+main{position:relative;z-index:1;max-width:1180px;margin:0 auto;padding:28px 20px 80px;display:flex;flex-direction:column;gap:28px;}
+.sec-label{font-family:'Gaegu',cursive;font-size:13px;font-weight:700;color:var(--ink-soft);letter-spacing:0.06em;margin-bottom:12px;display:flex;align-items:center;gap:6px;}
+.sec-label::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--border),transparent);margin-left:4px;}
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+.stat-pill{background:var(--white);border:1.5px solid var(--border);border-radius:var(--r);padding:16px 18px;box-shadow:var(--shadow-xs);display:flex;flex-direction:column;gap:3px;transition:transform 0.2s,box-shadow 0.2s;}
+.stat-pill:hover{transform:translateY(-2px);box-shadow:var(--shadow-sm);}
+.stat-num{font-family:'Gaegu',cursive;font-size:32px;font-weight:700;line-height:1;color:var(--ink);}
+.stat-lbl{font-size:11px;color:var(--ink-soft);font-weight:500;}
+.stat-pill.prog-pill{grid-column:span 2;justify-content:center;gap:8px;}
+.prog-info{display:flex;justify-content:space-between;align-items:center;}
+.prog-title{font-size:12px;font-weight:600;color:var(--ink-mid);}
+.prog-pct{font-family:'Gaegu',cursive;font-size:18px;font-weight:700;color:var(--ink);}
+.prog-track{height:10px;background:var(--cream);border:1.5px solid var(--border);border-radius:10px;overflow:hidden;}
+.prog-fill{height:100%;background:linear-gradient(90deg,#6edcb8,#2aab8c);border-radius:10px;transition:width 0.9s cubic-bezier(.22,1,.36,1);}
+.order-box{background:var(--white);border:1.5px solid var(--border);border-radius:var(--r);padding:18px 22px;box-shadow:var(--shadow-xs);display:flex;align-items:center;gap:14px;overflow-x:auto;}
+.order-lbl{font-family:'Gaegu',cursive;font-size:14px;font-weight:700;color:var(--ink-soft);white-space:nowrap;flex-shrink:0;}
+.order-chips{display:flex;align-items:center;flex-wrap:nowrap;}
+.o-chip{display:flex;align-items:center;gap:5px;padding:5px 13px;border-radius:20px;border:1.5px solid var(--border);background:var(--cream);font-size:13px;font-weight:500;white-space:nowrap;}
+.o-chip .cn{font-family:'Gaegu',cursive;font-size:12px;font-weight:700;width:18px;height:18px;background:var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--ink-mid);}
+.o-sep{font-size:14px;color:var(--ink-faint);margin:0 4px;flex-shrink:0;}
+.fame-box{border-radius:var(--r);padding:20px 24px;border:1.5px solid var(--peach-border);background:linear-gradient(135deg,var(--paper),var(--peach));box-shadow:var(--shadow-xs);}
+.fame-head{display:flex;align-items:center;gap:8px;margin-bottom:14px;}
+.fame-icon{font-size:20px;}
+.fame-title{font-family:'Gaegu',cursive;font-size:17px;font-weight:700;color:var(--ink);}
+.fame-count{margin-left:auto;font-size:11px;font-weight:700;background:var(--white);color:var(--ink-mid);padding:2px 10px;border-radius:10px;border:1.5px solid var(--border);}
+.fame-chips{display:flex;flex-wrap:wrap;gap:8px;}
+.fame-chip{display:flex;align-items:center;gap:6px;padding:6px 14px;border-radius:20px;border:1.5px solid var(--mint-border);background:var(--white);font-size:13px;font-weight:600;color:var(--ink);}
+.roast-rows{display:flex;flex-direction:column;gap:7px;}
+.roast-row{display:flex;align-items:flex-start;gap:10px;padding:11px 14px;background:var(--white);border:1.5px solid var(--rose-border);border-radius:var(--r-sm);animation:wiggle 4s ease-in-out infinite;}
+.roast-row:nth-child(2){animation-delay:.5s}.roast-row:nth-child(3){animation-delay:1s}.roast-row:nth-child(4){animation-delay:1.5s}.roast-row:nth-child(5){animation-delay:2s}
+@keyframes wiggle{0%,90%,100%{transform:translateX(0)}92%{transform:translateX(-2px)}94%{transform:translateX(2px)}96%{transform:translateX(-1px)}}
+.roast-e{font-size:18px;flex-shrink:0;margin-top:1px;}
+.roast-name{font-size:13px;font-weight:700;color:var(--rose-dark);}
+.roast-msg{font-size:12px;color:var(--ink-mid);line-height:1.5;}
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px;}
+.scard{background:var(--white);border:1.5px solid var(--border);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow-xs);display:flex;flex-direction:column;transition:transform 0.2s,box-shadow 0.2s;animation:pop 0.35s cubic-bezier(.22,1,.36,1) both;}
+.scard:hover{transform:translateY(-3px);box-shadow:var(--shadow-md);}
+@keyframes pop{from{opacity:0;transform:translateY(14px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+.scard-top{height:6px;flex-shrink:0;}
+.scard-body{padding:16px 18px;display:flex;flex-direction:column;gap:12px;flex:1;}
+.scard-hd{display:flex;align-items:center;justify-content:space-between;}
+.scard-name{font-size:16px;font-weight:700;color:var(--ink);}
+.scard-score{display:flex;align-items:center;gap:5px;}
+.scard-e{font-size:18px;}
+.scard-badge{font-size:10px;font-weight:700;padding:2px 9px;border-radius:10px;}
+.scard-quote{font-size:12px;color:var(--ink-mid);font-style:italic;line-height:1.55;padding:8px 10px;background:var(--cream);border-left:3px solid var(--border);border-radius:0 6px 6px 0;}
+.scard-div{height:1px;background:var(--border);}
+.scard-sec{display:flex;flex-direction:column;gap:4px;}
+.scard-sec-lbl{font-size:9px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink-faint);}
+.scard-sec-body{font-size:12px;color:var(--ink);line-height:1.65;}
+.scard-time{font-size:10px;color:var(--ink-faint);font-family:monospace;}
+.scard-ft{display:flex;align-items:center;justify-content:space-between;margin-top:auto;padding-top:4px;}
+.edit-btn{font-size:10px;font-weight:700;color:var(--ink-soft);background:var(--cream);border:1.5px solid var(--border);border-radius:6px;padding:3px 10px;cursor:pointer;transition:all 0.15s;}
+.edit-btn:hover{border-color:var(--ink);color:var(--ink);}
+.scard.empty{background:var(--cream);border-style:dashed;min-height:160px;align-items:center;justify-content:center;}
+.empty-inner{padding:20px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:8px;}
+.empty-face{font-size:30px;}
+.empty-name{font-size:14px;font-weight:700;color:var(--ink-mid);}
+.empty-msg{font-size:11px;color:var(--rose-dark);line-height:1.55;max-width:180px;}
+.p-vh{background:linear-gradient(90deg,#ffd166,#ff9a3c)}.p-h{background:linear-gradient(90deg,#6edcb8,#2aab8c)}.p-m{background:linear-gradient(90deg,#7ec8f7,#4fa8e8)}.p-l{background:linear-gradient(90deg,#c4a8f7,#9e7ef0)}.p-vl{background:linear-gradient(90deg,#f79a9a,#e05555)}
+.b-vh{background:#fff3d6;color:#b06000}.b-h{background:#d6f5ec;color:#1a7a5e}.b-m{background:#d6eeff;color:#1a5f9e}.b-l{background:#ede6ff;color:#5e3db3}.b-vl{background:#fde6e6;color:#b03030}
+.form-box{background:var(--white);border:1.5px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow-md);overflow:hidden;}
+.form-hd{background:linear-gradient(135deg,#ffb899,#ff8a65);padding:22px 28px;display:flex;align-items:center;justify-content:space-between;gap:16px;}
+.form-hd-left{display:flex;flex-direction:column;gap:3px;}
+.form-hd-sub{font-size:11px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:rgba(255,255,255,0.65);}
+.form-hd-title{font-family:'Gaegu',cursive;font-size:26px;font-weight:700;color:var(--white);}
+.form-auto-title{font-size:12px;color:rgba(255,255,255,0.7);background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.25);border-radius:var(--r-xs);padding:7px 14px;min-width:260px;text-align:right;font-family:monospace;}
+.form-grid{padding:24px 28px;display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+.ff{display:flex;flex-direction:column;gap:7px;}
+.ff.full{grid-column:1/-1;}
+.ff-lbl{font-size:11px;font-weight:700;letter-spacing:0.10em;text-transform:uppercase;color:var(--ink-soft);display:flex;align-items:center;gap:5px;}
+.ff-req{color:#ff6b6b;font-size:15px;line-height:1;}
+select,textarea{font-family:'Noto Sans KR',sans-serif;font-size:13px;color:var(--ink);background:var(--cream);border:1.5px solid var(--border);border-radius:var(--r-sm);padding:9px 13px;outline:none;width:100%;appearance:none;-webkit-appearance:none;transition:border-color 0.2s,box-shadow 0.2s,background 0.2s;}
+select:focus,textarea:focus{border-color:#ff9a7b;box-shadow:0 0 0 3px rgba(255,150,100,0.12);background:var(--white);}
+textarea{resize:vertical;min-height:82px;line-height:1.65;}
+.sel-wrap{position:relative;}
+.sel-wrap::after{content:'▾';position:absolute;right:12px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--ink-soft);font-size:11px;}
+.score-sel{display:flex;gap:7px;}
+.s-opt{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:9px 6px;border-radius:var(--r-sm);border:1.5px solid var(--border);background:var(--cream);cursor:pointer;transition:all 0.15s;user-select:none;}
+.s-opt:hover{border-color:#ff9a7b;background:var(--white);}
+.s-opt.on{border-color:#ff8a65;background:linear-gradient(135deg,#fff0e8,#ffe0d0);box-shadow:0 2px 8px rgba(255,120,80,0.18);}
+.s-opt .se{font-size:22px;line-height:1;}
+.s-opt .sl{font-size:8px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-soft);}
+.s-opt.on .sl{color:#c05020;}
+.form-ft{padding:0 28px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;}
+.form-hint{font-size:11px;color:var(--ink-faint);line-height:1.6;}
+.sub-btn{font-family:'Noto Sans KR',sans-serif;font-size:14px;font-weight:700;color:var(--white);background:linear-gradient(135deg,#ff9a7b,#ff6b6b);border:none;border-radius:var(--r-sm);padding:11px 30px;cursor:pointer;box-shadow:0 3px 10px rgba(255,90,80,0.28);transition:all 0.2s;display:flex;align-items:center;gap:6px;}
+.sub-btn:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(255,90,80,0.35);}
+.sub-btn:disabled{opacity:0.6;cursor:not-allowed;transform:none;}
+.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(90px);background:var(--ink);color:var(--white);font-size:13px;font-weight:500;padding:11px 22px;border-radius:30px;box-shadow:var(--shadow-lg);z-index:999;transition:transform 0.35s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;}
+.toast.on{transform:translateX(-50%) translateY(0);}
+@media(max-width:760px){
+  .hd{padding:0 16px;}main{padding:18px 14px 60px;}
+  .stats-row{grid-template-columns:1fr 1fr;}
+  .stat-pill.prog-pill{grid-column:span 2;}
+  .form-grid{grid-template-columns:1fr;}
+  .ff.full{grid-column:1;}
+  .form-hd{flex-direction:column;align-items:flex-start;gap:10px;}
+  .form-auto-title{min-width:0;width:100%;text-align:left;}
+  .score-sel{flex-wrap:wrap;}
+  .s-opt{min-width:56px;}
+}
+</style>
+</head>
+<body>
+<header class="hd">
+  <div class="hd-logo">
+    <div class="hd-logo-mark">🌿</div>
+    <span class="hd-title">Daily Scrum</span>
+  </div>
+  <div class="hd-right">
+    <span class="hd-date" id="hdDate"></span>
+    <button class="hd-write-btn" onclick="scrollToForm()">✏️ 작성하기</button>
+  </div>
+</header>
+<main>
+  <div>
+    <p class="sec-label">📊 오늘의 현황</p>
+    <div class="stats-row">
+      <div class="stat-pill"><span class="stat-num" id="stDone">0</span><span class="stat-lbl">제출 완료 ✅</span></div>
+      <div class="stat-pill"><span class="stat-num" id="stPending" style="color:#e05555">8</span><span class="stat-lbl">아직 안 씀 🙈</span></div>
+      <div class="stat-pill prog-pill">
+        <div class="prog-info"><span class="prog-title">오늘의 완료율</span><span class="prog-pct" id="stPct">0%</span></div>
+        <div class="prog-track"><div class="prog-fill" id="stBar" style="width:0%"></div></div>
+      </div>
+    </div>
+  </div>
+  <div>
+    <p class="sec-label">🎲 오늘의 발표 순서 <span style="font-size:10px;font-weight:400;color:var(--ink-faint);margin-left:6px;font-family:sans-serif;">매일 자정 자동 변경</span></p>
+    <div class="order-box">
+      <span class="order-lbl">순서 →</span>
+      <div class="order-chips" id="orderChips"></div>
+    </div>
+  </div>
+  <div>
+    <p class="sec-label">🏆 명예의 전당</p>
+    <div class="fame-box" id="fameBox"></div>
+  </div>
+  <div>
+    <p class="sec-label">📋 오늘의 스크럼</p>
+    <div class="cards-grid" id="cardsGrid"></div>
+  </div>
+  <div id="formAnchor">
+    <p class="sec-label">✏️ 스크럼 작성</p>
+    <div class="form-box">
+      <div class="form-hd">
+        <div class="form-hd-left">
+          <span class="form-hd-sub">Daily Standup</span>
+          <span class="form-hd-title">오늘의 스크럼 🌿</span>
+        </div>
+        <div class="form-auto-title" id="autoTitle">담당자를 선택해주세요</div>
+      </div>
+      <div class="form-grid">
+        <div class="ff">
+          <label class="ff-lbl">담당자 <span class="ff-req">*</span></label>
+          <div class="sel-wrap">
+            <select id="fName" onchange="updateTitle()">
+              <option value="">이름 선택 👇</option>
+              <option>김문일</option><option>윤희섭</option><option>차연수</option>
+              <option>김주용</option><option>김진영</option><option>신형종</option>
+              <option>강미란</option><option>김형기</option>
+            </select>
+          </div>
+        </div>
+        <div class="ff">
+          <label class="ff-lbl">오늘의 에너지 <span class="ff-req">*</span></label>
+          <div class="score-sel">
+            <div class="s-opt" data-val="VERY HIGH" onclick="pickScore(this,'VERY HIGH')"><span class="se">🔥</span><span class="sl">Very High</span></div>
+            <div class="s-opt" data-val="HIGH" onclick="pickScore(this,'HIGH')"><span class="se">😄</span><span class="sl">High</span></div>
+            <div class="s-opt" data-val="MIDDLE" onclick="pickScore(this,'MIDDLE')"><span class="se">😐</span><span class="sl">Middle</span></div>
+            <div class="s-opt" data-val="LOW" onclick="pickScore(this,'LOW')"><span class="se">😴</span><span class="sl">Low</span></div>
+            <div class="s-opt" data-val="VERY LOW" onclick="pickScore(this,'VERY LOW')"><span class="se">💀</span><span class="sl">Very Low</span></div>
+          </div>
+        </div>
+        <div class="ff full"><label class="ff-lbl">이유</label><textarea id="fReason" placeholder="왜 그 에너지인가요? 한 줄이라도 괜찮아요 🙂"></textarea></div>
+        <div class="ff"><label class="ff-lbl">✅ 완료한 일 <span class="ff-req">*</span></label><textarea id="fDone" placeholder="• 어제 끝낸 것들&#10;• 여러 항목은 줄바꿈으로"></textarea></div>
+        <div class="ff"><label class="ff-lbl">📌 앞으로 할 일 <span class="ff-req">*</span></label><textarea id="fTodo" placeholder="• 오늘 할 것들&#10;• 여러 항목은 줄바꿈으로"></textarea></div>
+        <div class="ff full"><label class="ff-lbl">💬 이슈 / 공유사항</label><textarea id="fIssue" placeholder="팀과 나눌 것이 있으면 여기에! (없으면 비워도 돼요 🙆)" style="min-height:60px"></textarea></div>
+      </div>
+      <div class="form-ft">
+        <p class="form-hint">제출 전에 내용을<br>한 번 더 확인해주세요 👀</p>
+        <button class="sub-btn" id="subBtn" onclick="submitScrum()"><span>제출하기</span><span>🚀</span></button>
+      </div>
+    </div>
+  </div>
+</main>
+<div class="toast" id="toast"></div>
+<script>
+const SCRIPT_URL='https://script.google.com/macros/s/AKfycbyUvkaLQHAwN2VDctuZKObp6cpLn42NTAhSps49XhvkeQI_iNuOcfJGqAvb_4pTOWb2bw/exec';
+const MEMBERS=['김문일','윤희섭','차연수','김주용','김진영','신형종','강미란','김형기'];
+const TOTAL=MEMBERS.length;
+const SCORE={'VERY HIGH':{e:'🔥',lbl:'VERY HIGH',pal:'p-vh',badge:'b-vh'},'HIGH':{e:'😄',lbl:'HIGH',pal:'p-h',badge:'b-h'},'MIDDLE':{e:'😐',lbl:'MIDDLE',pal:'p-m',badge:'b-m'},'LOW':{e:'😴',lbl:'LOW',pal:'p-l',badge:'b-l'},'VERY LOW':{e:'💀',lbl:'VERY LOW',pal:'p-vl',badge:'b-vl'}};
+const ROASTS=[
+  n=>`${n}님, 스크럼 작성란이 오늘도 공란입니다. 손가락 건강 괜찮으신가요?`,
+  n=>`${n}님은 현재 팀의 미스터리입니다. 오늘 뭘 하셨는지 아무도 모름.`,
+  n=>`${n}님, 혹시 스크럼 보드의 존재를 모르시는 건 아니죠? 지금 보고 계시잖아요.`,
+  n=>`${n}님 덕분에 팀 완료율이 딱 저만큼 낮습니다. 범인은 여기 있음.`,
+  n=>`${n}님의 공란이 오늘도 팀원들에게 깊은 상상력을 선사하고 있어요.`,
+  n=>`${n}님, 언젠간 작성하시겠죠? 저는 기다립니다. 계속.`,
+  n=>`${n}님이 작성 안 하셔서 팀 전체가 궁금증에 빠져 있어요. 오늘 무사하신 거 맞죠?`,
+  n=>`${n}님의 공란이 오늘의 포인트입니다. 의도하신 건가요, 퍼포먼스인가요?`,
+];
+let selScore='';
+
+function kstDate(){return new Date(Date.now()+9*3600*1000).toISOString().slice(0,10);}
+function kstDisplay(){const d=new Date(Date.now()+9*3600*1000);const days=['일','월','화','수','목','금','토'];return `${d.getUTCFullYear()}.${String(d.getUTCMonth()+1).padStart(2,'0')}.${String(d.getUTCDate()).padStart(2,'0')} (${days[d.getUTCDay()]})`;}
+
+// 날짜 기반 고정 시드 셔플 — 누가 어디서 열어도 같은 순서
+function seededRandom(seed){
+  let s=seed^0x9e3779b9;
+  for(let i=0;i<20;i++){s=Math.imul(s^(s>>>15),0x85ebca6b);s=Math.imul(s^(s>>>13),0xc2b2ae35);s=s^(s>>>16);}
+  return function(){
+    s=Math.imul(s^(s>>>15),0x85ebca6b);
+    s=Math.imul(s^(s>>>13),0xc2b2ae35);
+    s=s^(s>>>16);
+    return (s>>>0)/0x100000000;
+  };
+}
+function getDayOrder(){
+  const today=kstDate();
+  const seed=today.split('-').reduce((a,b)=>a*100+Number(b),0);
+  const rng=seededRandom(seed);
+  const arr=[...MEMBERS];
+  for(let i=arr.length-1;i>0;i--){
+    const j=Math.floor(rng()*(i+1));
+    [arr[i],arr[j]]=[arr[j],arr[i]];
+  }
+  return arr;
+}
+
+function formatTimestamp(ts){
+  if(!ts) return '';
+  const s=String(ts);
+  if(s.includes('T')||s.startsWith('1899')){
+    const d=new Date(ts);
+    if(!isNaN(d)){
+      const kst=new Date(d.getTime()+9*3600*1000);
+      return String(kst.getUTCHours()).padStart(2,'0')+':'+String(kst.getUTCMinutes()).padStart(2,'0');
+    }
+  }
+  return s;
+}
+
+async function loadData(){
+  return new Promise(resolve=>{
+    const cb='cb_'+Date.now();
+    window[cb]=function(all){
+      delete window[cb];
+      document.getElementById('_jsonp')&&document.getElementById('_jsonp').remove();
+      const today=kstDate();
+      const filtered=all.filter(r=>{
+        if(!r.date) return false;
+        const s=String(r.date).slice(0,10);
+        if(s===today) return true;
+        const d=new Date(r.date);
+        if(!isNaN(d)){const kst=new Date(d.getTime()+9*3600*1000);return kst.toISOString().slice(0,10)===today;}
+        return false;
+      });
+      // 중복 제거 — 같은 이름 마지막 행 우선
+      const deduped=[];const seen={};
+      [...filtered].reverse().forEach(r=>{if(!seen[r.name]){seen[r.name]=true;deduped.unshift(r);}});
+      renderAll(deduped);
+      resolve();
+    };
+    const s=document.createElement('script');
+    s.id='_jsonp';
+    s.src=SCRIPT_URL+'?callback='+cb+'&t='+Date.now();
+    s.onerror=()=>{delete window[cb];renderAll([]);resolve();};
+    document.head.appendChild(s);
+  });
+}
+
+async function submitScrum(){
+  const name=document.getElementById('fName').value;
+  const done=document.getElementById('fDone').value.trim();
+  const todo=document.getElementById('fTodo').value.trim();
+  if(!name){showToast('❌ 담당자를 선택해주세요');return;}
+  if(!selScore){showToast('❌ 오늘의 에너지를 선택해주세요');return;}
+  if(!done){showToast('❌ 완료한 일을 입력해주세요');return;}
+  if(!todo){showToast('❌ 앞으로 할 일을 입력해주세요');return;}
+  const btn=document.getElementById('subBtn');
+  btn.innerHTML='<span>제출 중...</span>';btn.disabled=true;
+  try{
+    await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify({date:kstDate(),name,score:selScore,reason:document.getElementById('fReason').value.trim(),done,todo,issue:document.getElementById('fIssue').value.trim(),timestamp:new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})})});
+    showToast('🎉 제출 완료! 수고했어요 '+name+'님 🌿');
+    resetForm();
+    setTimeout(()=>loadData(),2000);
+  }catch(e){showToast('❌ 제출 실패. 네트워크를 확인해주세요.');}
+  finally{btn.innerHTML='<span>제출하기</span><span>🚀</span>';btn.disabled=false;}
+}
+
+function renderAll(data){
+  const submitted=data.map(r=>r.name);
+  const pending=MEMBERS.filter(m=>!submitted.includes(m));
+  const pct=Math.round(submitted.length/TOTAL*100);
+  document.getElementById('stDone').textContent=submitted.length;
+  document.getElementById('stPending').textContent=pending.length;
+  document.getElementById('stPct').textContent=pct+'%';
+  document.getElementById('stBar').style.width=pct+'%';
+  const order=getDayOrder();
+  document.getElementById('orderChips').innerHTML=order.map((n,i)=>
+    `<div class="o-chip"><span class="cn">${i+1}</span><span>${n}</span></div>${i<order.length-1?'<span class="o-sep">›</span>':''}`
+  ).join('');
+  renderFame(submitted,pending,data);
+  renderCards(data,order);
+}
+
+function renderFame(submitted,pending,data){
+  const box=document.getElementById('fameBox');
+  const byTime=submitted.slice().sort((a,b)=>{
+    const ta=data.find(r=>r.name===a)?.timestamp||'';
+    const tb=data.find(r=>r.name===b)?.timestamp||'';
+    return String(ta)<String(tb)?-1:1;
+  });
+  if(pending.length===0){
+    box.style.cssText='border-color:var(--mint-border);background:linear-gradient(135deg,#f0fff5,#e8fdf5)';
+    box.innerHTML=`<div class="fame-head"><span class="fame-icon">🎊</span><span class="fame-title">오늘 전원 완료! 최고예요 🌿</span></div><div class="fame-chips">${byTime.map((n,i)=>`<div class="fame-chip">${['🥇','🥈','🥉'][i]||'🏅'} ${n}</div>`).join('')}</div>`;
+    return;
+  }
+  box.style.cssText='border-color:var(--peach-border);background:linear-gradient(135deg,var(--paper),var(--peach))';
+  box.innerHTML=`
+    ${submitted.length>0?`<div class="fame-head"><span class="fame-icon">🏆</span><span class="fame-title">명예의 전당</span><span class="fame-count">${submitted.length}명 완료</span></div><div class="fame-chips" style="margin-bottom:18px">${byTime.map((n,i)=>`<div class="fame-chip">${['🥇','🥈','🥉'][i]||'🏅'} ${n}</div>`).join('')}</div>`:''}
+    <div class="fame-head" style="margin-bottom:10px"><span class="fame-icon">🫵</span><span class="fame-title" style="color:var(--rose-dark)">아직 안 쓰신 분들</span><span class="fame-count" style="border-color:var(--rose-border);color:var(--rose-dark)">${pending.length}명</span></div>
+    <div class="roast-rows">${pending.map((n,i)=>`<div class="roast-row"><span class="roast-e">🫠</span><div><span class="roast-name">${n}</span><span class="roast-msg"> — ${ROASTS[i%ROASTS.length](n)}</span></div></div>`).join('')}</div>`;
+}
+
+function fillForm(entry){
+  document.getElementById('fName').value=entry.name;
+  document.getElementById('fReason').value=entry.reason||'';
+  document.getElementById('fDone').value=entry.done||'';
+  document.getElementById('fTodo').value=entry.todo||'';
+  document.getElementById('fIssue').value=entry.issue||'';
+  selScore=entry.score||'';
+  document.querySelectorAll('.s-opt').forEach(o=>o.classList.toggle('on',o.dataset.val===entry.score));
+  updateTitle();
+  document.getElementById('formAnchor').scrollIntoView({behavior:'smooth'});
+  showToast('✏️ 수정 모드 — 내용 변경 후 다시 제출해주세요');
+}
+
+function renderCards(data,order){
+  const grid=document.getElementById('cardsGrid');grid.innerHTML='';
+  order.forEach((name,idx)=>{
+    const entry=data.find(r=>r.name===name)||null;
+    const card=document.createElement('div');
+    card.className='scard'+(entry?'':' empty');
+    card.style.animationDelay=(idx*0.05)+'s';
+    if(entry){
+      const s=SCORE[entry.score]||SCORE['MIDDLE'];
+      const dp=String(entry.done||'').split('\n').filter(Boolean);
+      const tp=String(entry.todo||'').split('\n').filter(Boolean);
+      const ts=formatTimestamp(entry.timestamp);
+      const entryJson=JSON.stringify(entry).replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+      card.innerHTML=`
+        <div class="scard-top ${s.pal}"></div>
+        <div class="scard-body">
+          <div class="scard-hd">
+            <span class="scard-name">${entry.name}</span>
+            <div class="scard-score"><span class="scard-e">${s.e}</span><span class="scard-badge ${s.badge}">${s.lbl}</span></div>
+          </div>
+          ${entry.reason?`<div class="scard-quote">"${String(entry.reason)}"</div>`:''}
+          <div class="scard-div"></div>
+          <div class="scard-sec"><span class="scard-sec-lbl">✅ 완료한 일</span><div class="scard-sec-body">${dp.map(p=>'• '+p.replace(/^[•\-\s]+/,'')).join('<br>')||String(entry.done)}</div></div>
+          <div class="scard-sec"><span class="scard-sec-lbl">📌 앞으로 할 일</span><div class="scard-sec-body">${tp.map(p=>'• '+p.replace(/^[•\-\s]+/,'')).join('<br>')||String(entry.todo)}</div></div>
+          ${entry.issue?`<div class="scard-sec"><span class="scard-sec-lbl">💬 이슈/공유</span><div class="scard-sec-body">${String(entry.issue)}</div></div>`:''}
+          <div class="scard-ft">
+            <span class="scard-time">제출 ${ts}</span>
+            <button class="edit-btn" onclick='fillForm(JSON.parse(decodeURIComponent("${encodeURIComponent(JSON.stringify(entry))}")))'}>✏️ 수정</button>
+          </div>
+        </div>`;
+    }else{
+      card.innerHTML=`<div class="empty-inner"><span class="empty-face">🫥</span><span class="empty-name">${name}</span><span class="empty-msg">${ROASTS[idx%ROASTS.length](name)}</span></div>`;
+    }
+    grid.appendChild(card);
+  });
+}
+
+function updateTitle(){const n=document.getElementById('fName').value;document.getElementById('autoTitle').textContent=n?`${kstDisplay()} ${n} 스크럼 회의`:'담당자를 선택해주세요';}
+function pickScore(el,val){document.querySelectorAll('.s-opt').forEach(o=>o.classList.remove('on'));el.classList.add('on');selScore=val;}
+function resetForm(){['fName','fReason','fDone','fTodo','fIssue'].forEach(id=>document.getElementById(id).value='');selScore='';document.querySelectorAll('.s-opt').forEach(o=>o.classList.remove('on'));updateTitle();}
+function scrollToForm(){document.getElementById('formAnchor').scrollIntoView({behavior:'smooth'});}
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('on');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('on'),3000);}
+
+setInterval(loadData,60000);
+document.getElementById('hdDate').textContent=kstDisplay();
+updateTitle();loadData();
+</script>
+</body>
+</html>
