@@ -137,7 +137,9 @@ textarea{resize:vertical;min-height:82px;line-height:1.65;}
 }
 .modal-overlay.on .modal-box { transform: translateY(0); }
 .modal-title { font-family: 'Gaegu', cursive; font-size: 24px; font-weight: 700; color: var(--ink); margin-bottom: 12px; }
-.modal-gag { font-size: 14px; color: var(--ink-mid); background: var(--cream); padding: 15px; border-radius: var(--r-sm); line-height: 1.6; font-style: italic; margin-bottom: 20px; word-break: keep-all; }
+.modal-gag { font-size: 14px; color: var(--ink-mid); background: var(--cream); padding: 15px; border-radius: var(--r-sm); line-height: 1.6; font-style: italic; margin-bottom: 20px; word-break: keep-all; white-space: pre-line; }
+.modal-img { width: 100%; max-height: 280px; object-fit: contain; border-radius: var(--r-sm); margin-bottom: 20px; display: block; }
+.modal-video { width: 100%; aspect-ratio: 16/9; border-radius: var(--r-sm); margin-bottom: 20px; border: none; display: block; }
 .modal-btn { font-family: 'Noto Sans KR', sans-serif; font-size: 13px; font-weight: 700; color: var(--white); background: linear-gradient(135deg, #ff9a7b, #ff6b6b); border: none; border-radius: var(--r-sm); padding: 10px 24px; cursor: pointer; box-shadow: 0 2px 8px rgba(255,100,80,0.25); }
 </style>
 </head>
@@ -330,8 +332,8 @@ async function submitScrum(){
     
     const resData = await response.json();
     
-    // 성공 시 토스트 대신 팝업창 띄우기
-    openModal(resData.gag);
+    // 성공 시 토스트 대신 팝업창 띄우기 (media 객체 or gag 텍스트 fallback)
+    openModal(resData.media || resData.gag);
     resetForm();
     setTimeout(()=>loadData(), 2000);
   }catch(e){
@@ -344,12 +346,44 @@ async function submitScrum(){
   finally{btn.innerHTML='<span>제출하기</span><span>🚀</span>';btn.disabled=false;}
 }
 
-// 팝업 열기/닫기 함수 추가
-function openModal(gagText) {
-  document.getElementById('gagContent').innerText = gagText;
+// 팝업 열기/닫기 함수
+function openModal(mediaObj) {
+  const box = document.getElementById('modalBody');
+  box.innerHTML = '';
+
+  const type = (mediaObj && mediaObj.type) ? mediaObj.type : 'text';
+  const content = (mediaObj && mediaObj.content) ? mediaObj.content : (typeof mediaObj === 'string' ? mediaObj : '🌿 제출 완료!');
+
+  if (type === 'image') {
+    const img = document.createElement('img');
+    img.src = content;
+    img.className = 'modal-img';
+    img.onerror = () => { img.style.display='none'; };
+    box.appendChild(img);
+  } else if (type === 'video') {
+    const ytMatch = content.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/))([A-Za-z0-9_-]{11})/);
+    const iframe = document.createElement('iframe');
+    iframe.className = 'modal-video';
+    iframe.allow = 'autoplay; encrypted-media';
+    iframe.allowFullscreen = true;
+    if (ytMatch) {
+      iframe.src = `https://www.youtube.com/embed/${ytMatch[1]}?autoplay=1&mute=1`;
+    } else {
+      iframe.src = content + (content.includes('?') ? '&' : '?') + 'autoplay=1&mute=1';
+    }
+    box.appendChild(iframe);
+  } else {
+    const p = document.createElement('div');
+    p.className = 'modal-gag';
+    p.textContent = content;
+    box.appendChild(p);
+  }
+
   document.getElementById('gagModal').classList.add('on');
 }
 function closeModal() {
+  const iframe = document.querySelector('#modalBody iframe');
+  if (iframe) iframe.src = '';
   document.getElementById('gagModal').classList.remove('on');
 }
 
@@ -452,7 +486,7 @@ updateTitle();loadData();
 <div class="modal-overlay" id="gagModal">
   <div class="modal-box">
     <div class="modal-title">🎉 작성이 완료되었습니다!</div>
-    <div class="modal-gag" id="gagContent">랜덤 개그가 로딩 중입니다...</div>
+    <div id="modalBody"></div>
     <button class="modal-btn" onclick="closeModal()">확인</button>
   </div>
 </div>
