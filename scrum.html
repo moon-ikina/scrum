@@ -322,7 +322,7 @@ async function submitScrum(){
   if(!todo){showToast('❌ 앞으로 할 일을 입력해주세요');return;}
   const btn=document.getElementById('subBtn');
   btn.innerHTML='<span>제출 중...</span>';btn.disabled=true;
-  // CORS 우회: POST(no-cors)로 저장 후 JSONP로 media 받기
+  // 1단계: POST(no-cors)로 데이터 저장
   const payload = {
     date:kstDate(), name, score:selScore,
     reason:document.getElementById('fReason').value.trim(),
@@ -330,15 +330,13 @@ async function submitScrum(){
     issue:document.getElementById('fIssue').value.trim(),
     timestamp:new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})
   };
-
-  // 1단계: POST로 데이터 저장
   fetch(SCRIPT_URL, {
     method:'POST',
     headers:{'Content-Type':'text/plain'},
     body:JSON.stringify(payload)
   }).catch(()=>{});
 
-  // 2단계: 1초 뒤 JSONP로 media 랜덤 1개 가져오기
+  // 2단계: JSONP로 media 가져오기
   setTimeout(() => {
     const s = document.createElement('script');
     const cb = 'getMedia_' + Date.now();
@@ -353,7 +351,7 @@ async function submitScrum(){
       if(s.parentNode) s.parentNode.removeChild(s);
     };
     document.body.appendChild(s);
-  }, 1000);
+  }, 500);
 
   resetForm();
   setTimeout(()=>loadData(), 2500);
