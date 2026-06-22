@@ -322,25 +322,42 @@ async function submitScrum(){
   if(!todo){showToast('❌ 앞으로 할 일을 입력해주세요');return;}
   const btn=document.getElementById('subBtn');
   btn.innerHTML='<span>제출 중...</span>';btn.disabled=true;
-  try{
-    // 백엔드 응답을 받아오기 위해 fetch 방식을 정식으로 활용합니다.
-    const response = await fetch(SCRIPT_URL,{
-      method:'POST',
-      headers:{'Content-Type':'text/plain'},
-      body:JSON.stringify({date:kstDate(),name,score:selScore,reason:document.getElementById('fReason').value.trim(),done,todo,issue:document.getElementById('fIssue').value.trim(),timestamp:new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})})
-    });
-    
-    const resData = await response.json();
-    
-    openModal(resData.media);
-    resetForm();
-    setTimeout(()=>loadData(), 2000);
-  }catch(e){
-    openModal({ type: 'text', content: '오늘도 무사히 스크럼 제출 완료! 🌿' });
-    resetForm();
-    setTimeout(()=>loadData(), 2000);
-  }
-  finally{btn.innerHTML='<span>제출하기</span><span>🚀</span>';btn.disabled=false;}
+  // CORS 우회: POST(no-cors)로 저장 후 JSONP로 media 받기
+  const payload = {
+    date:kstDate(), name, score:selScore,
+    reason:document.getElementById('fReason').value.trim(),
+    done, todo,
+    issue:document.getElementById('fIssue').value.trim(),
+    timestamp:new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})
+  };
+
+  // 1단계: POST로 데이터 저장
+  fetch(SCRIPT_URL, {
+    method:'POST',
+    headers:{'Content-Type':'text/plain'},
+    body:JSON.stringify(payload)
+  }).catch(()=>{});
+
+  // 2단계: 1초 뒤 JSONP로 media 랜덤 1개 가져오기
+  setTimeout(() => {
+    const s = document.createElement('script');
+    const cb = 'getMedia_' + Date.now();
+    window[cb] = function(result) {
+      openModal(result);
+      delete window[cb];
+      if(s.parentNode) s.parentNode.removeChild(s);
+    };
+    s.src = SCRIPT_URL + '?action=media&callback=' + cb + '&t=' + Date.now();
+    s.onerror = () => {
+      openModal({ type: 'text', content: '오늘도 무사히 스크럼 완료! 🌿' });
+      if(s.parentNode) s.parentNode.removeChild(s);
+    };
+    document.body.appendChild(s);
+  }, 1000);
+
+  resetForm();
+  setTimeout(()=>loadData(), 2500);
+  btn.innerHTML='<span>제출하기</span><span>🚀</span>';btn.disabled=false;
 }
 
 // 팝업 열기/닫기 함수
