@@ -322,72 +322,61 @@ async function submitScrum(){
   if(!todo){showToast('❌ 앞으로 할 일을 입력해주세요');return;}
   const btn=document.getElementById('subBtn');
   btn.innerHTML='<span>제출 중...</span>';btn.disabled=true;
-  // POST(no-cors)로 저장
-  fetch(SCRIPT_URL, {
-    method:'POST',
-    headers:{'Content-Type':'text/plain'},
-    body:JSON.stringify({date:kstDate(),name,score:selScore,reason:document.getElementById('fReason').value.trim(),done,todo,issue:document.getElementById('fIssue').value.trim(),timestamp:new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})})
-  }).catch(()=>{});
-
-  // 팝업 즉시 오픈 (클릭 직후라 자동재생 허용됨)
-  document.getElementById('modalBody').innerHTML = '<div class="modal-gag">🌀 로딩 중...</div>';
-  document.getElementById('gagModal').classList.add('on');
-
-  // JSONP로 media 받아서 팝업에 채우기
-  const _s = document.createElement('script');
-  const _cb = 'getMedia_' + Date.now();
-  window[_cb] = function(result) {
-    fillModal(result);
-    delete window[_cb];
-    if(_s.parentNode) _s.parentNode.removeChild(_s);
-  };
-  _s.src = SCRIPT_URL + '?action=media&callback=' + _cb + '&t=' + Date.now();
-  _s.onerror = () => {
-    fillModal({ type: 'text', content: '오늘도 무사히 스크럼 완료! 🌿' });
-    if(_s.parentNode) _s.parentNode.removeChild(_s);
-  };
-  document.body.appendChild(_s);
-
-  resetForm();
-  setTimeout(()=>loadData(), 2000);
-  btn.innerHTML='<span>제출하기</span><span>🚀</span>';btn.disabled=false;
+  try{
+    // 백엔드 응답을 받아오기 위해 fetch 방식을 정식으로 활용합니다.
+    const response = await fetch(SCRIPT_URL,{
+      method:'POST',
+      headers:{'Content-Type':'text/plain'},
+      body:JSON.stringify({date:kstDate(),name,score:selScore,reason:document.getElementById('fReason').value.trim(),done,todo,issue:document.getElementById('fIssue').value.trim(),timestamp:new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})})
+    });
+    
+    const resData = await response.json();
+    
+    openModal(resData.media);
+    resetForm();
+    setTimeout(()=>loadData(), 2000);
+  }catch(e){
+    openModal({ type: 'text', content: '오늘도 무사히 스크럼 제출 완료! 🌿' });
+    resetForm();
+    setTimeout(()=>loadData(), 2000);
+  }
+  finally{btn.innerHTML='<span>제출하기</span><span>🚀</span>';btn.disabled=false;}
 }
 
-// 팝업 열기/닫기 함수 추가
-function fillModal(mediaObj) {
+// 팝업 열기/닫기 함수
+function openModal(mediaObj) {
   const box = document.getElementById('modalBody');
   box.innerHTML = '';
+
   const type = (mediaObj && mediaObj.type) ? mediaObj.type : 'text';
-  const url = (mediaObj && mediaObj.content) ? mediaObj.content : (typeof mediaObj === 'string' ? mediaObj : '🌿 제출 완료!');
+  const content = (mediaObj && mediaObj.content) ? mediaObj.content : (typeof mediaObj === 'string' ? mediaObj : '🌿 제출 완료!');
+
   if (type === 'image') {
     const img = document.createElement('img');
+    img.src = content;
     img.className = 'modal-img';
-    img.src = url;
     img.onerror = () => { img.style.display='none'; };
     box.appendChild(img);
   } else if (type === 'video') {
-    const ytMatch = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([A-Za-z0-9_-]{11})/);
-    const isMp4 = /\.mp4(\?|$)/i.test(url);
+    const ytMatch = content.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([A-Za-z0-9_-]{11})/);
+    const iframe = document.createElement('iframe');
+    iframe.className = 'modal-video';
+    iframe.allow = 'autoplay; encrypted-media';
+    iframe.allowFullscreen = true;
     if (ytMatch) {
-      const iframe = document.createElement('iframe');
-      iframe.className = 'modal-video';
-      iframe.allow = 'autoplay; encrypted-media';
-      iframe.allowFullscreen = true;
-      iframe.src = 'https://www.youtube.com/embed/' + ytMatch[1] + '?autoplay=1&mute=1';
-      box.appendChild(iframe);
-    } else if (isMp4) {
-      const vid = document.createElement('video');
-      vid.className = 'modal-video';
-      vid.src = url; vid.autoplay = true; vid.muted = true;
-      vid.loop = true; vid.controls = true; vid.playsInline = true;
-      box.appendChild(vid);
+      iframe.src = `https://www.youtube.com/embed/${ytMatch[1]}?autoplay=1&mute=1`;
+    } else {
+      iframe.src = content + (content.includes('?') ? '&' : '?') + 'autoplay=1&mute=1';
     }
+    box.appendChild(iframe);
   } else {
     const p = document.createElement('div');
     p.className = 'modal-gag';
-    p.textContent = url;
+    p.textContent = content;
     box.appendChild(p);
   }
+
+  document.getElementById('gagModal').classList.add('on');
 }
 function closeModal() {
   const iframe = document.querySelector('#modalBody iframe');
